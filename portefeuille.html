@@ -214,10 +214,18 @@
             reader.readAsText(file, "windows-1252");
         });
 
+        function nettoyerNombre(texte) {
+            return String(texte === undefined || texte === null ? "" : texte).trim().replace(/\s/g, "").replace(",", ".");
+        }
+
+        function estNombre(texte) {
+            const nettoye = nettoyerNombre(texte);
+            return /^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(nettoye);
+        }
+
         function parseNombre(texte) {
-            if (texte === undefined || texte === null) return NaN;
-            const nettoye = String(texte).trim().replace(/\s/g, "").replace(",", ".");
-            return parseFloat(nettoye);
+            if (!estNombre(texte)) return NaN;
+            return parseFloat(nettoyerNombre(texte));
         }
 
         function formatNombre(valeur, decimales) {
@@ -247,7 +255,7 @@
             }
 
             const infosLignes = lignes.slice(0, indexTable)
-                .filter(l => !l.startsWith("Votre compte"));
+                .filter(l => !l.startsWith("Votre compte") && !(l.startsWith("Montant;") && l.includes("+/-")));
             const colonnes = lignes[indexTable].split(";").map(c => c.trim()).filter(c => c.length > 0);
             const donnees = lignes.slice(indexTable + 1)
                 .map(l => l.split(";"))
@@ -271,7 +279,8 @@
             const valeurTotale = valeurLigne("Valeur totale", 1);
             const montantPositions = valeurLigne("Total positions sous dossier", 1);
             const pmvPositions = valeurLigne("Total positions sous dossier", 2);
-            const rendement = !isNaN(montantPositions) && montantPositions !== 0 ? (pmvPositions / montantPositions) * 100 : NaN;
+            const prixRevient = montantPositions - pmvPositions;
+            const rendement = !isNaN(prixRevient) && prixRevient !== 0 ? (pmvPositions / prixRevient) * 100 : NaN;
 
             const cartes = [
                 { label: "Valeur totale", texte: formatEuro(valeurTotale), signe: null },
@@ -298,8 +307,7 @@
                 if (parts.length === 0) return;
                 const label = parts[0];
                 const valeurs = parts.slice(1).map(p => {
-                    const n = parseNombre(p);
-                    return isNaN(n) ? p : formatEuro(n);
+                    return estNombre(p) ? formatEuro(parseNombre(p)) : p;
                 });
                 html += "<tr><td>" + label + "</td><td>" + valeurs.join(" &nbsp;|&nbsp; ") + "</td></tr>";
             });
