@@ -254,8 +254,9 @@
                 return;
             }
 
+            const exclusions = ["Votre compte", "Tous les montants", "Plus ou moins", "Total positions SRD"];
             const infosLignes = lignes.slice(0, indexTable)
-                .filter(l => !l.startsWith("Votre compte") && !(l.startsWith("Montant;") && l.includes("+/-")));
+                .filter(l => !exclusions.some(p => l.startsWith(p)) && !(l.startsWith("Montant;") && l.includes("+/-")));
             const colonnes = lignes[indexTable].split(";").map(c => c.trim()).filter(c => c.length > 0);
             const donnees = lignes.slice(indexTable + 1)
                 .map(l => l.split(";"))
