@@ -27,15 +27,34 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #0d1b3e;
-            color: #fff;
+            background: #fff;
             border-radius: 12px;
             padding: 14px 22px;
             margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        header h1 {
-            font-size: 1.5em;
+        .logo {
+            line-height: 1.1;
+        }
+
+        .logo .easy {
+            color: #2563eb;
+            font-weight: 800;
+            font-size: 1.6em;
+            letter-spacing: -0.5px;
+        }
+
+        .logo .bourse {
+            color: #6b7280;
+            font-weight: 800;
+            font-size: 1.6em;
+            letter-spacing: -0.5px;
+        }
+
+        .logo .sous-titre {
+            font-size: 0.72em;
+            color: #9ca3af;
         }
 
         .btn-import {
@@ -66,56 +85,124 @@
             margin-bottom: 24px;
         }
 
-        .resume {
+        .haut {
             display: flex;
             gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .resume-card {
-            flex: 1;
-            min-width: 180px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 16px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .resume-card .label {
-            font-size: 0.8em;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .resume-card .valeur {
-            font-size: 1.3em;
-            font-weight: bold;
-        }
-
-        .infos {
-            background: #fff;
-            border-radius: 12px;
-            padding: 16px 20px;
+            align-items: stretch;
             margin-bottom: 24px;
+        }
+
+        .bloc {
+            border-radius: 12px;
+            padding: 16px 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .bloc-infos {
+            flex: 1;
+            background: #fff;
             font-size: 0.92em;
         }
 
-        .infos table {
+        .bloc-infos table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .infos td {
+        .bloc-infos td {
             padding: 4px 8px;
         }
 
-        .infos td:first-child {
+        .bloc-infos td:first-child {
             color: #666;
-            width: 40%;
+            width: 55%;
+        }
+
+        .bloc-infos tr.entete td {
+            color: #999;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+        }
+
+        .champ-cumul {
+            border: 1px solid #d4d8e0;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.95em;
+            width: 140px;
+        }
+
+        .champ-cumul:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: -1px;
+        }
+
+        .bloc-centrale {
+            flex: 1;
+            background: #eceff3;
+        }
+
+        .bloc-centrale .label {
+            font-size: 0.75em;
+            color: #2563eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .bloc-centrale .valeur-totale {
+            font-size: 1.9em;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin: 2px 0 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bloc-centrale .ligne {
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 3px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bloc-indices {
+            flex: 1.4;
+            background: #fff;
+            overflow-x: auto;
+        }
+
+        table.indices {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.8em;
+        }
+
+        table.indices th {
+            color: #999;
+            font-size: 0.72em;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 4px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        table.indices td {
+            padding: 5px 8px;
+            vertical-align: top;
+        }
+
+        table.indices .nom {
+            font-weight: 600;
+            display: block;
+        }
+
+        table.indices .val {
+            font-variant-numeric: tabular-nums;
         }
 
         h2 {
@@ -179,7 +266,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>Bourse</h1>
+            <div class="logo">
+                <span class="easy">easy</span><span class="bourse">bourse</span>
+                <div class="sous-titre">Groupe La Banque Postale</div>
+            </div>
             <button class="btn-import" id="btn-import">Import CSV intraday</button>
             <input type="file" id="file-input" accept=".csv,text/csv" class="hidden">
         </header>
@@ -190,8 +280,11 @@
         </div>
 
         <div id="portfolio" class="hidden">
-            <div class="resume" id="resume"></div>
-            <div class="infos" id="infos"></div>
+            <div class="haut">
+                <div class="bloc bloc-infos" id="infos"></div>
+                <div class="bloc bloc-centrale" id="resume"></div>
+                <div class="bloc bloc-indices"><table class="indices" id="indices"></table></div>
+            </div>
             <h2 id="titre-positions"></h2>
             <div class="table-wrapper">
                 <table class="positions">
@@ -203,6 +296,8 @@
     </div>
 
     <script>
+        const CLE_CUMUL = "bourse01.cumulVersements";
+
         const fileInput = document.getElementById("file-input");
         document.getElementById("btn-import").addEventListener("click", () => fileInput.click());
         document.getElementById("btn-import-2").addEventListener("click", () => fileInput.click());
@@ -245,6 +340,11 @@
             return valeur < 0 ? "negatif" : "positif";
         }
 
+        function formatPourcent(valeur) {
+            if (isNaN(valeur)) return "—";
+            return (valeur >= 0 ? "+" : "") + formatNombre(valeur, 2) + " %";
+        }
+
         function afficher(texte) {
             const lignes = texte.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
 
@@ -264,6 +364,7 @@
 
             afficherResume(infosLignes);
             afficherInfos(infosLignes);
+            afficherIndices();
             afficherTableau(colonnes, donnees);
 
             document.getElementById("landing").classList.add("hidden");
@@ -283,30 +384,55 @@
             const prixRevient = montantPositions - pmvPositions;
             const rendement = !isNaN(prixRevient) && prixRevient !== 0 ? (pmvPositions / prixRevient) * 100 : NaN;
 
-            const cartes = [
-                { label: "Valeur totale", texte: formatEuro(valeurTotale), signe: null },
-                { label: "+/- Value positions", texte: formatEuro(pmvPositions), signe: pmvPositions },
-                { label: "Rendement", texte: isNaN(rendement) ? "" : (rendement >= 0 ? "+" : "") + formatNombre(rendement, 2) + " %", signe: rendement }
-            ];
-
             const resume = document.getElementById("resume");
-            resume.innerHTML = "";
-            cartes.forEach(c => {
-                const carte = document.createElement("div");
-                carte.className = "resume-card";
-                const classe = c.signe === null ? "" : classeSigne(c.signe);
-                carte.innerHTML = '<div class="label">' + c.label + '</div><div class="valeur ' + classe + '">' + c.texte + "</div>";
-                resume.appendChild(carte);
+            resume.innerHTML =
+                '<div class="label">Valeur totale</div>' +
+                '<div class="valeur-totale">' + formatEuro(valeurTotale) + '</div>' +
+                '<div class="label">+/- Valeur positions</div>' +
+                '<div class="ligne ' + classeSigne(pmvPositions) + '">' + (isNaN(pmvPositions) ? "—" : (pmvPositions >= 0 ? "+" : "") + formatEuro(pmvPositions)) + '</div>' +
+                '<div class="label" style="margin-top:10px">Rendement</div>' +
+                '<div class="ligne ' + classeSigne(rendement) + '">' + formatPourcent(rendement) + "</div>";
+        }
+
+        const ZONES_INDICES = ["É.-U.", "Europe", "Asie", "Amérique latine", "Devises", "Cryptomonnaies", "Contrats à terme"];
+
+        const INDICES = [
+            { zone: "Europe", nom: "DAX", valeur: "26 325,01", variation: "-112,66", pct: -0.43 },
+            { zone: "Europe", nom: "FTSE 100", valeur: "10 784,16", variation: "+1,50", pct: 0.01 },
+            { zone: "Europe", nom: "CAC 40", valeur: "8 205,37", variation: "+27,48", pct: 0.34 },
+            { zone: "Europe", nom: "IBEX 35", valeur: "19 486,00", variation: "+115,10", pct: 0.59 },
+            { zone: "Europe", nom: "Euro Stoxx 50", valeur: "6 231,54", variation: "-34,17", pct: -0.55 }
+        ];
+
+        function afficherIndices() {
+            const table = document.getElementById("indices");
+            let html = "<tr>" + ZONES_INDICES.map(z => "<th>" + z + "</th>").join("") + "</tr>";
+            INDICES.forEach(ind => {
+                const colonne = ZONES_INDICES.indexOf(ind.zone);
+                const cellules = ZONES_INDICES.map((z, i) => {
+                    if (i !== colonne) return "<td></td>";
+                    const classe = ind.pct < 0 ? "negatif" : "positif";
+                    const fleche = ind.pct < 0 ? "▼" : "▲";
+                    return '<td><span class="nom">' + ind.nom + '</span>' +
+                        '<span class="val">' + ind.valeur + '</span> ' +
+                        '<span class="' + classe + '">' + fleche + " " + ind.variation + " (" + formatPourcent(ind.pct) + ")</span></td>";
+                });
+                html += "<tr>" + cellules.join("") + "</tr>";
             });
+            table.innerHTML = html;
         }
 
         function afficherInfos(infosLignes) {
             const conteneur = document.getElementById("infos");
-            let html = "<table>";
+            let html = "<table><tr class=\"entete\"><td>Montant</td><td>+/- Valeur</td></tr>";
             infosLignes.forEach(l => {
                 const parts = l.split(";").map(p => p.trim()).filter(p => p.length > 0);
                 if (parts.length === 0) return;
                 const label = parts[0];
+                if (label === "Cumul des versements") {
+                    html += '<tr><td>Cumul des versements</td><td><input type="text" id="input-cumul" class="champ-cumul" inputmode="decimal" placeholder=""></td></tr>';
+                    return;
+                }
                 const brut = label === "Total positions sous dossier" ? parts.slice(1, 2) : parts.slice(1);
                 const valeurs = brut.map(p => {
                     return estNombre(p) ? formatEuro(parseNombre(p)) : p;
@@ -315,6 +441,14 @@
             });
             html += "</table>";
             conteneur.innerHTML = html;
+
+            const champ = document.getElementById("input-cumul");
+            if (champ) {
+                champ.value = localStorage.getItem(CLE_CUMUL) || "";
+                champ.addEventListener("change", () => {
+                    localStorage.setItem(CLE_CUMUL, champ.value.trim());
+                });
+            }
         }
 
         function afficherTableau(colonnes, donnees) {
