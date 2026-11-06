@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bourse — Portefeuille en temps réel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #0d1b3e;
+            color: #fff;
+            border-radius: 12px;
+            padding: 14px 22px;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 1.4em;
+        }
+
+        .controles {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.85em;
+        }
+
+        .controles select,
+        .controles button {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .controles select {
+            background: #1e2f5c;
+            font-weight: 400;
+        }
+
+        .controles button:hover,
+        .controles select:hover {
+            background: #1d4ed8;
+        }
+
+        .controles label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        #maj {
+            color: #9db2e0;
+        }
+
+        .resume {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .resume-card {
+            flex: 1;
+            min-width: 170px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .resume-card .label {
+            font-size: 0.8em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .resume-card .valeur {
+            font-size: 1.25em;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .resume-card .sous-label {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .formulaire {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .formulaire h2 {
+            font-size: 1.05em;
+            margin-bottom: 12px;
+        }
+
+        .formulaire form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .champ {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .champ label {
+            font-size: 0.75em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .champ input {
+            border: 1px solid #d4d8e0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 0.9em;
+            width: 130px;
+        }
+
+        .champ input:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: -1px;
+        }
+
+        .btn-ajouter {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-ajouter:hover {
+            background: #1d4ed8;
+        }
+
+        .aide {
+            font-size: 0.78em;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .landing {
+            background: #fff;
+            border-radius: 12px;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .landing p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        h2.section {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        table.positions {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        table.positions th,
+        table.positions td {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.88em;
+        }
+
+        table.positions th {
+            background: #0d1b3e;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 0.72em;
+            letter-spacing: 0.5px;
+        }
+
+        table.positions tr:nth-child(even) {
+            background: #f8f9fb;
+        }
+
+        table.positions tr:hover {
+            background: #eef1f6;
+        }
+
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .positif { color: #16a34a; font-weight: 600; }
+        .negatif { color: #dc2626; font-weight: 600; }
+        .neutre { color: #666; }
+
+        .symbole {
+            font-weight: bold;
+        }
+
+        .nom-valeur {
+            font-size: 0.78em;
+            color: #888;
+            display: block;
+        }
+
+        .cours-indispo {
+            color: #b45309;
+            font-size: 0.85em;
+        }
+
+        .btn-ligne {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95em;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .btn-ligne:hover {
+            background: #e2e6ee;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.78em;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bourse — Temps réel</h1>
+            <div class="controles">
+                <label><input type="checkbox" id="auto-refresh" checked> Auto</label>
+                <select id="intervalle" title="Intervalle de rafraîchissement">
+                    <option value="5000">5 s</option>
+                    <option value="15000" selected>15 s</option>
+                    <option value="30000">30 s</option>
+                    <option value="60000">60 s</option>
+                </select>
+                <button id="btn-refresh" type="button">Rafraîchir</button>
+                <span id="maj">Jamais mis à jour</span>
+            </div>
+        </header>
+
+        <div class="formulaire">
+            <h2>Ajouter une position</h2>
+            <form id="form-ajout">
+                <div class="champ">
+                    <label for="f-ticker">Ticker</label>
+                    <input id="f-ticker" type="text" placeholder="AAPL.US" required>
+                </div>
+                <div class="champ">
+                    <label for="f-nom">Nom (optionnel)</label>
+                    <input id="f-nom" type="text" placeholder="Apple">
+                </div>
+                <div class="champ">
+                    <label for="f-quantite">Quantité</label>
+                    <input id="f-quantite" type="text" placeholder="10" required>
+                </div>
+                <div class="champ">
+                    <label for="f-prix">Prix d'achat (€)</label>
+                    <input id="f-prix" type="text" placeholder="150,00" required>
+                </div>
+                <div class="champ">
+                    <label for="f-date">Date d'achat</label>
+                    <input id="f-date" type="date" required>
+                </div>
+                <button class="btn-ajouter" type="submit">Ajouter</button>
+            </form>
+            <p class="aide">Tickers Stooq : actions US ex. <code>AAPL.US</code>, Euronext Paris ex. <code>AIR.PA</code>, crypto ex. <code>BTC-USD</code>. Les données sont mises à jour à chaque rafraîchissement (source Stooq, cours différés).</p>
+        </div>
+
+        <div id="landing" class="landing">
+            <p>Aucune position enregistrée. Ajoutez une position ci-dessus ou chargez un portefeuille d'exemple.</p>
+            <button class="btn-ajouter" id="btn-exemple" type="button">Charger un exemple</button>
+        </div>
+
+        <div id="portfolio" class="hidden">
+            <div class="resume" id="resume"></div>
+            <h2 class="section" id="titre-positions"></h2>
+            <div class="table-wrapper">
+                <table class="positions">
+                    <thead>
+                        <tr>
+                            <th>Valeur</th>
+                            <th class="num">Cours</th>
+                            <th class="num">Var. jour</th>
+                            <th class="num">Valorisation</th>
+                            <th class="num">Investi</th>
+                            <th class="num">+/- €</th>
+                            <th class="num">+/- %</th>
+                            <th class="num">ROI</th>
+                            <th class="num">Rendement annualisé</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="positions-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>Données de marché : Stooq (cours différés). Portefeuille stocké localement dans votre navigateur.</footer>
+    </div>
+
+    <script>
+        const CLE_STOCKAGE = "bourse01.portfolio.tempsreel";
+        const API_STOOQ = "https://stooq.com/q/l/?s=";
+
+        let positions = charger();
+        let cours = {};
+        let timer = null;
+
+        function charger() {
+            try {
+                const brut = localStorage.getItem(CLE_STOCKAGE);
+                const data = brut ? JSON.parse(brut) : [];
+                return Array.isArray(data) ? data : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function sauvegarder() {
+            localStorage.setItem(CLE_STOCKAGE, JSON.stringify(positions));
+        }
+
+        function nettoyerNombre(texte) {
+            return String(texte === undefined || texte === null ? "" : texte).trim().replace(/\s/g, "").replace(",", ".");
+        }
+
+        function parseNombre(texte) {
+            const nettoye = nettoyerNombre(texte);
+            if (!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(nettoye)) return NaN;
+            return parseFloat(nettoye);
+        }
+
+        function formatNombre(valeur, decimales) {
+            if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
+            return valeur.toLocaleString("fr-FR", {
+                minimumFractionDigits: decimales,
+                maximumFractionDigits: decimales
+            });
+        }
+
+        function formatEuro(valeur) {
+            if (isNaN(valeur)) return "—";
+            return formatNombre(valeur, 2) + " €";
+        }
+
+        function formatPourcent(valeur, avecSigne) {
+            if (isNaN(valeur)) return "—";
+            return (avecSigne && valeur >= 0 ? "+" : "") + formatNombre(valeur, 2) + " %";
+        }
+
+        function classeSigne(valeur) {
+            if (isNaN(valeur) || valeur === 0) return "neutre";
+            return valeur < 0 ? "negatif" : "positif";
+        }
+
+        function fleche(valeur) {
+            if (isNaN(valeur) || valeur === 0) return "";
+            return valeur < 0 ? " ▼" : " ▲";
+        }
+
+        function joursDepuis(dateStr) {
+            const achat = new Date(dateStr + "T00:00:00");
+            if (isNaN(achat)) return NaN;
+            const diff = (Date.now() - achat.getTime()) / 86400000;
+            return Math.max(1, diff);
+        }
+
+        function calculPosition(p) {
+            const investi = p.quantite * p.prixAchat;
+            const quote = cours[p.ticker];
+            const prixActuel = quote && !isNaN(quote.close) ? quote.close : p.prixManuel;
+            const valorisation = prixActuel !== null && !isNaN(prixActuel) ? p.quantite * prixActuel : NaN;
+            const gain = !isNaN(valorisation) ? valorisation - investi : NaN;
+            const gainPct = investi !== 0 ? (gain / investi) * 100 : NaN;
+            const jours = joursDepuis(p.dateAchat);
+            let annualise = NaN;
+            if (!isNaN(valorisation) && investi > 0 && !isNaN(jours)) {
+                annualise = (Math.pow(valorisation / investi, 365 / jours) - 1) * 100;
+            }
+            return { investi, prixActuel, valorisation, gain, gainPct, roi: gainPct, annualise, varJour: quote ? quote.varJour : NaN };
+        }
+
+        function tickersUniques() {
+            return [...new Set(positions.map(p => p.ticker))];
+        }
+
+        async function rafraichirCours() {
+            const liste = tickersUniques();
+            await Promise.all(liste.map(async (ticker) => {
+                try {
+                    const reponse = await fetch(API_STOOQ + encodeURIComponent(ticker.toLowerCase()) + "&f=sd2t2ohlcv&h&e=csv");
+                    if (!reponse.ok) throw new Error("HTTP " + reponse.status);
+                    const texte = await reponse.text();
+                    const lignes = texte.split(/\r?\n/).filter(l => l.length > 0);
+                    if (lignes.length < 2) throw new Error("Réponse vide");
+                    const parts = lignes[1].split(",");
+                    const open = parseFloat(parts[3]);
+                    const close = parseFloat(parts[6]);
+                    if (isNaN(close)) throw new Error("Cours indisponible");
+                    cours[ticker] = {
+                        close: close,
+                        open: open,
+                        varJour: !isNaN(open) && open !== 0 ? ((close - open) / open) * 100 : NaN,
+                        heure: parts[2] && parts[2] !== "N/A" ? parts[2] : ""
+                    };
+                } catch (e) {
+                    if (!cours[ticker]) cours[ticker] = { close: NaN, open: NaN, varJour: NaN, heure: "", erreur: true };
+                }
+            }));
+            const maj = document.getElementById("maj");
+            maj.textContent = "Dernière mise à jour : " + new Date().toLocaleTimeString("fr-FR");
+            afficher();
+        }
+
+        function demarrerAuto() {
+            arreterAuto();
+            const actif = document.getElementById("auto-refresh").checked;
+            if (!actif) return;
+            const delai = parseInt(document.getElementById("intervalle").value, 10);
+            timer = setInterval(rafraichirCours, delai);
+        }
+
+        function arreterAuto() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        function afficher() {
+            const vide = positions.length === 0;
+            document.getElementById("landing").classList.toggle("hidden", !vide);
+            document.getElementById("portfolio").classList.toggle("hidden", vide);
+            if (vide) return;
+
+            afficherResume();
+            afficherTableau();
+        }
+
+        function afficherResume() {
+            const totaux = positions.reduce((acc, p) => {
+                const c = calculPosition(p);
+                acc.investi += c.investi;
+                if (!isNaN(c.valorisation)) acc.valorisation += c.valorisation;
+                if (!isNaN(c.gain)) acc.gain += c.gain;
+                if (!isNaN(c.annualise) && c.investi > 0) {
+                    acc.pondere += c.annualise * c.investi;
+                    acc.investiAnnualise += c.investi;
+                }
+                return acc;
+            }, { investi: 0, valorisation: 0, gain: 0, pondere: 0, investiAnnualise: 0 });
+
+            const roi = totaux.investi !== 0 ? (totaux.gain / totaux.investi) * 100 : NaN;
+            const annualise = totaux.investiAnnualise > 0 ? totaux.pondere / totaux.investiAnnualise : NaN;
+
+            const cartes = [
+                { label: "Valorisation totale", texte: formatEuro(totaux.valorisation), sous: "capital investi : " + formatEuro(totaux.investi), signe: null },
+                { label: "Gains / Pertes", texte: formatEuro(totaux.gain), sous: formatPourcent(roi, true) + " du capital", signe: totaux.gain },
+                { label: "ROI", texte: formatPourcent(roi, true), sous: "depuis les achats", signe: roi },
+                { label: "Rendement annualisé", texte: formatPourcent(annualise, true), sous: "moyenne pondérée des positions", signe: annualise }
+            ];
+
+            const resume = document.getElementById("resume");
+            resume.innerHTML = "";
+            cartes.forEach(c => {
+                const carte = document.createElement("div");
+                carte.className = "resume-card";
+                const classe = c.signe === null ? "" : classeSigne(c.signe);
+                carte.innerHTML = '<div class="label">' + c.label + '</div>' +
+                    '<div class="valeur ' + classe + '">' + c.texte + '</div>' +
+                    '<div class="sous-label">' + c.sous + "</div>";
+                resume.appendChild(carte);
+            });
+        }
+
+        function afficherTableau() {
+            document.getElementById("titre-positions").textContent = "Positions — " + positions.length + " valeur(s)";
+
+            const body = document.getElementById("positions-body");
+            body.innerHTML = "";
+
+            positions.forEach((p, index) => {
+                const c = calculPosition(p);
+                const ligne = document.createElement("tr");
+
+                const celluleValeur = document.createElement("td");
+                celluleValeur.innerHTML = '<span class="symbole">' + p.ticker + "</span>" +
+                    (p.nom ? '<span class="nom-valeur">' + p.nom + "</span>" : "") +
+                    '<span class="nom-valeur">' + formatNombre(p.quantite, 4).replace(/,0+$/, "").replace(/,$/, "") + " × " + formatEuro(p.prixAchat) + " le " + p.dateAchat + "</span>";
+
+                const celluleCours = document.createElement("td");
+                celluleCours.className = "num";
+                const quote = cours[p.ticker];
+                if (!isNaN(c.prixActuel)) {
+                    celluleCours.textContent = formatNombre(c.prixActuel, 4).replace(/,0+$/, "").replace(/,$/, "") + " €";
+                } else {
+                    celluleCours.innerHTML = '<span class="cours-indispo">indisponible</span>';
+                }
+
+                const celluleVar = document.createElement("td");
+                celluleVar.className = "num " + classeSigne(c.varJour);
+                celluleVar.textContent = isNaN(c.varJour) ? "—" : fleche(c.varJour) + " " + formatPourcent(c.varJour, true);
+
+                const celluleValorisation = document.createElement("td");
+                celluleValorisation.className = "num";
+                celluleValorisation.textContent = formatEuro(c.valorisation);
+
+                const celluleInvesti = document.createElement("td");
+                celluleInvesti.className = "num";
+                celluleInvesti.textContent = formatEuro(c.investi);
+
+                const celluleGain = document.createElement("td");
+                celluleGain.className = "num " + classeSigne(c.gain);
+                celluleGain.textContent = isNaN(c.gain) ? "—" : (c.gain >= 0 ? "+" : "") + formatEuro(c.gain);
+
+                const celluleGainPct = document.createElement("td");
+                celluleGainPct.className = "num " + classeSigne(c.gainPct);
+                celluleGainPct.textContent = formatPourcent(c.gainPct, true);
+
+                const celluleRoi = document.createElement("td");
+                celluleRoi.className = "num " + classeSigne(c.roi);
+                celluleRoi.textContent = formatPourcent(c.roi, true);
+
+                const celluleAnn = document.createElement("td");
+                celluleAnn.className = "num " + classeSigne(c.annualise);
+                celluleAnn.textContent = formatPourcent(c.annualise, true) + (isNaN(c.annualise) ? "" : " / an");
+
+                const celluleActions = document.createElement("td");
+                celluleActions.className = "num";
+                const btnManuel = document.createElement("button");
+                btnManuel.className = "btn-ligne";
+                btnManuel.title = "Saisir un cours manuel";
+                btnManuel.textContent = "✏️";
+                btnManuel.addEventListener("click", () => saisirCoursManuel(index));
+                const btnSuppr = document.createElement("button");
+                btnSuppr.className = "btn-ligne";
+                btnSuppr.title = "Supprimer la position";
+                btnSuppr.textContent = "🗑️";
+                btnSuppr.addEventListener("click", () => supprimerPosition(index));
+                celluleActions.appendChild(btnManuel);
+                celluleActions.appendChild(btnSuppr);
+
+                [celluleValeur, celluleCours, celluleVar, celluleValorisation, celluleInvesti, celluleGain, celluleGainPct, celluleRoi, celluleAnn, celluleActions]
+                    .forEach(td => ligne.appendChild(td));
+                body.appendChild(ligne);
+            });
+        }
+
+        function saisirCoursManuel(index) {
+            const p = positions[index];
+            const saisie = prompt("Cours manuel pour " + p.ticker + " (€) :", p.prixManuel || "");
+            if (saisie === null) return;
+            const n = parseNombre(saisie);
+            if (isNaN(n) || n <= 0) {
+                alert("Veuillez saisir un nombre positif.");
+                return;
+            }
+            p.prixManuel = n;
+            sauvegarder();
+            afficher();
+        }
+
+        function supprimerPosition(index) {
+            if (!confirm("Supprimer la position " + positions[index].ticker + " ?")) return;
+            positions.splice(index, 1);
+            sauvegarder();
+            afficher();
+        }
+
+        document.getElementById("form-ajout").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const ticker = document.getElementById("f-ticker").value.trim().toUpperCase();
+            const nom = document.getElementById("f-nom").value.trim();
+            const quantite = parseNombre(document.getElementById("f-quantite").value);
+            const prixAchat = parseNombre(document.getElementById("f-prix").value);
+            const dateAchat = document.getElementById("f-date").value;
+
+            if (!ticker || isNaN(quantite) || quantite <= 0 || isNaN(prixAchat) || prixAchat <= 0 || !dateAchat) {
+                alert("Veuillez remplir tous les champs avec des valeurs valides.");
+                return;
+            }
+
+            positions.push({ ticker, nom, quantite, prixAchat, dateAchat, prixManuel: null });
+            sauvegarder();
+            e.target.reset();
+            document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+            rafraichirCours();
+        });
+
+        document.getElementById("btn-exemple").addEventListener("click", () => {
+            const ilYaUnAn = new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+            const ilYa6Mois = new Date(Date.now() - 182 * 86400000).toISOString().slice(0, 10);
+            positions = [
+                { ticker: "AIR.PA", nom: "Air Liquide", quantite: 10, prixAchat: 150, dateAchat: ilYaUnAn, prixManuel: null },
+                { ticker: "AAPL.US", nom: "Apple", quantite: 5, prixAchat: 180, dateAchat: ilYa6Mois, prixManuel: null },
+                { ticker: "BTC-USD", nom: "Bitcoin", quantite: 0.05, prixAchat: 60000, dateAchat: ilYaUnAn, prixManuel: null }
+            ];
+            sauvegarder();
+            rafraichirCours();
+        });
+
+        document.getElementById("btn-refresh").addEventListener("click", rafraichirCours);
+        document.getElementById("auto-refresh").addEventListener("change", demarrerAuto);
+        document.getElementById("intervalle").addEventListener("change", demarrerAuto);
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) rafraichirCours();
+        });
+
+        document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+        afficher();
+        rafraichirCours();
+        demarrerAuto();
+    </script>
+</body>
+</html>
